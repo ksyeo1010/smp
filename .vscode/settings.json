@@ -1,0 +1,7 @@
+{
+    "python.autoComplete.extraPaths": ["./src"],
+    "python.workspaceSymbols.exclusionPatterns": [
+        "**/site-packages/**",
+        "${workspaceFolder}/data"
+    ]
+}
