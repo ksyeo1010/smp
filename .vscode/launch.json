@@ -9,9 +9,36 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/src/main.py",
+            "program": "${workspaceFolder}/backend/main.py",
             "console": "integratedTerminal",
             "args": []
+        },
+        {
+            "name": "Electron: Main",
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "runtimeExecutable": "yarn",
+            "runtimeArgs": [
+                "start:main",
+                "--inspect=5858",
+                " --remote-debugging-port=9223"
+            ],
+            "preLaunchTask": "Start Webpack Dev"
+        },
+        {
+            "name": "Electron: Renderer",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9223,
+            "webRoot": "${workspaceFolder}",
+            "timeout": 15000
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Electron: All",
+            "configurations": ["Electron: Main", "Electron: Renderer"]
         }
     ]
 }
