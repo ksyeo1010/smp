@@ -57,3 +57,4 @@ data/
 # ui
 .erb/img
 .erb/mocks
+config.ini

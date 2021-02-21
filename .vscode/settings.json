@@ -1,8 +1,9 @@
 {
-    "python.autoComplete.extraPaths": ["./src"],
+    "python.autoComplete.extraPaths": ["./backend"],
     "python.workspaceSymbols.exclusionPatterns": [
         "**/site-packages/**",
-        "${workspaceFolder}/data"
+        "${workspaceFolder}/data",
+        "${workspaceFolder}/src"
     ],
     "python.pythonPath": "/Users/kwangsoo/opt/anaconda3/envs/py37/bin/python",
     "terminal.integrated.shellArgs.osx": ["-i", "-l"],

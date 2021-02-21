@@ -37,3 +37,10 @@ def load_dataset(symbol, history_points):
     # y = y[:,0]
 
     return X, y, normaliser, data
+
+
+def get_all_datasets(path):
+    res = None
+    for root, dirs, files in os.walk(path):
+        res = files
+    return files
