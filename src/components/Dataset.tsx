@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { thunkGetDatasets } from '../thunks';
 
@@ -19,11 +19,12 @@ type PropsFromRedux = ConnectedProps<typeof connector>;
 type Props = PropsFromRedux;
 
 const Dataset = (props: Props) => {
-    React.useEffect(() => {
-        props.getDatasets();
-    }, [props]);
+    const { files, getDatasets } = props;
 
-    const { files } = props;
+    useEffect(() => {
+        getDatasets();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div>

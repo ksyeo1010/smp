@@ -14,6 +14,8 @@ def save_dataset(symbol):
 
     data.to_csv(file_name)
 
+    return symbol + '.csv'
+
 
 def load_dataset(symbol, history_points):
     file_name = os.path.join('data', f'{symbol}.csv')

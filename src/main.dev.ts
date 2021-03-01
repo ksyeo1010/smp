@@ -41,7 +41,7 @@ if (
 const installExtensions = async () => {
     const installer = require('electron-devtools-installer');
     const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-    const extensions = ['REACT_DEVELOPER_TOOLS'];
+    const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
 
     return installer
         .default(
@@ -52,13 +52,6 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-    if (
-        process.env.NODE_ENV === 'development' ||
-        process.env.DEBUG_PROD === 'true'
-    ) {
-        await installExtensions();
-    }
-
     const RESOURCES_PATH = app.isPackaged
         ? path.join(process.resourcesPath, 'assets')
         : path.join(__dirname, '../assets');
@@ -78,6 +71,15 @@ const createWindow = async () => {
     });
 
     mainWindow.loadURL(`file://${__dirname}/index.html`);
+
+    mainWindow.webContents.on('did-frame-finish-load', async () => {
+        if (
+            process.env.NODE_ENV === 'development' ||
+            process.env.DEBUG_PROD === 'true'
+        ) {
+            await installExtensions();
+        }
+    });
 
     // @TODO: Use 'ready-to-show' event
     //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event

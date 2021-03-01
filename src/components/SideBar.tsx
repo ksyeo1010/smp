@@ -1,67 +1,119 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Collapse from '@material-ui/core/Collapse';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import StarBorder from '@material-ui/icons/StarBorder';
+import { useHistory } from 'react-router-dom';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import {
+    Drawer,
+    CssBaseline,
+    AppBar,
+    Toolbar,
+    List,
+    Typography,
+    Divider,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+} from '@material-ui/core';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        maxWidth: 360,
-        backgroundColor: theme.palette.background.paper,
-    },
-    nested: {
-        paddingLeft: theme.spacing(4),
-    },
-}));
+export type RouteType = {
+    path: string;
+    text: string;
+    exact: boolean;
+    icon: React.ReactElement;
+    component: React.ComponentType;
+};
 
-const SideBar = () => {
+type Props = {
+    mainRoutes: RouteType[];
+    sideRoutes: RouteType[];
+};
+
+const drawerWidth = 220;
+
+export const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        root: {
+            display: 'flex',
+        },
+        appBar: {
+            width: `calc(100% - ${drawerWidth}px)`,
+            marginLeft: drawerWidth,
+        },
+        drawer: {
+            width: drawerWidth,
+            flexShrink: 0,
+        },
+        drawerPaper: {
+            width: drawerWidth,
+        },
+        // necessary for content to be below app bar
+        toolbar: theme.mixins.toolbar,
+        content: {
+            flexGrow: 1,
+            backgroundColor: theme.palette.background.default,
+            padding: theme.spacing(3),
+        },
+    })
+);
+
+export default function PermanentDrawerLeft(props: Props) {
     const classes = useStyles();
-    const [open, setOpen] = React.useState(true);
+    const history = useHistory();
 
-    const handleClick = () => {
-        setOpen(!open);
+    const { mainRoutes, sideRoutes } = props;
+
+    const [curr, setCurr] = React.useState(mainRoutes[0].text);
+
+    const handleRoute = (route: RouteType) => {
+        history.push(route.path);
+        setCurr(route.text);
     };
 
     return (
-        <List
-            component="nav"
-            aria-labelledby="nested-list-subheader"
-            subheader={
-                <ListSubheader component="div" id="nested-list-subheader">
-                    Nested List Items
-                </ListSubheader>
-            }
-            className={classes.root}
-        >
-            <ListItem button>
-                <ListItemText primary="Datasets" />
-            </ListItem>
-            <ListItem button onClick={handleClick}>
-                <ListItemText primary="Saved Datasets" />
-                {open ? <ExpandLess /> : <ExpandMore />}
-            </ListItem>
-            <Collapse in={open} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                    <ListItem button className={classes.nested}>
-                        <ListItemIcon>
-                            <StarBorder />
-                        </ListItemIcon>
-                        <ListItemText primary="Starred" />
-                    </ListItem>
+        <div>
+            <CssBaseline />
+            <AppBar position="fixed" className={classes.appBar}>
+                <Toolbar>
+                    <Typography variant="h6" noWrap>
+                        {curr}
+                    </Typography>
+                </Toolbar>
+            </AppBar>
+            <Drawer
+                className={classes.drawer}
+                variant="permanent"
+                classes={{
+                    paper: classes.drawerPaper,
+                }}
+                anchor="left"
+            >
+                <div className={classes.toolbar} />
+                <Divider />
+                <List>
+                    {mainRoutes.map((route) => (
+                        <ListItem
+                            button
+                            key={route.text}
+                            onClick={() => handleRoute(route)}
+                        >
+                            <ListItemIcon>{route.icon}</ListItemIcon>
+                            <ListItemText primary={route.text} />
+                        </ListItem>
+                    ))}
                 </List>
-            </Collapse>
-            <ListItem button>
-                <ListItemText primary="Settings" />
-            </ListItem>
-        </List>
+                <Divider />
+                <List>
+                    {sideRoutes.map((route) => (
+                        <ListItem
+                            button
+                            key={route.text}
+                            onClick={() => handleRoute(route)}
+                        >
+                            <ListItemIcon>{route.icon}</ListItemIcon>
+                            <ListItemText primary={route.text} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Drawer>
+        </div>
     );
-};
-
-export default SideBar;
+}

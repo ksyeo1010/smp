@@ -27,7 +27,20 @@ if __name__ == '__main__':
     # get all datasets
     @app.route('/datasets', methods=['GET'])
     def get_datasets():
-        respose = ResponseType(True, ds.get_all_datasets(ds_path))
-        return jsonify(respose)
+        res = ResponseType(True, ds.get_all_datasets(ds_path))
+        return jsonify(res)
+
+    # save dataset
+    @app.route('/save_dataset', methods=['POST'])
+    def save_dataset():
+        symbol = request.json['symbol']
+        try:
+            file_name = ds.save_dataset(symbol)
+            res = ResponseType(True, file_name)
+            return jsonify(res), 201
+        except Exception as e:
+            res = ResponseType(False, '', str(e))
+            return jsonify(res), 400
+
 
     app.run(port=port)
