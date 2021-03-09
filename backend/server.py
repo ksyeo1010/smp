@@ -1,9 +1,8 @@
 import flask
 from flask import request, jsonify
-from configparser import ConfigParser
 from dataclasses import dataclass
 
-import utils.dataset as ds
+from utils import Config, Dataset
 
 # response type
 @dataclass
@@ -12,14 +11,11 @@ class ResponseType:
     data: object
     error: str = ''
 
-if __name__ == '__main__':
+# main
+def main():
     # get configs
-    config = ConfigParser()
-    config.read('config.ini')
-
-    port = config.getint('default', 'port')
-    ds_path = config.get('default','dataset_path')
-    api_key = config.get('alpha_vantage', 'api_key')
+    config = Config()
+    ds = Dataset()
 
     # start server
     app = flask.Flask(__name__)
@@ -27,20 +23,30 @@ if __name__ == '__main__':
     # get all datasets
     @app.route('/datasets', methods=['GET'])
     def get_datasets():
-        res = ResponseType(True, ds.get_all_datasets(ds_path))
+        res = ResponseType(True, ds.get_all_datasets())
         return jsonify(res)
 
     # save dataset
-    @app.route('/save_dataset', methods=['POST'])
-    def save_dataset():
-        symbol = request.json['symbol']
+    @app.route('/dataset/<string:symbol>', methods=['GET', 'POST'])
+    def dataset(symbol):
         try:
-            file_name = ds.save_dataset(symbol)
-            res = ResponseType(True, file_name)
-            return jsonify(res), 201
+            if request.method == 'GET':
+                df = ds.load_dataset(symbol)
+                res = ResponseType(True, df)
+                status = 200
+            elif request.method == 'POST':
+                symbol = request.json['symbol']
+                fstat = ds.save_dataset(symbol)
+                res = ResponseType(True, fstat)
+                status = 201
         except Exception as e:
             res = ResponseType(False, '', str(e))
-            return jsonify(res), 400
+            status = 400
+
+        return jsonify(res), status
 
 
-    app.run(port=port)
+    app.run(port=config.get_port())
+
+if __name__ == '__main__':
+    main()
