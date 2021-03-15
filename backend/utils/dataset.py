@@ -20,6 +20,15 @@ class File:
 class DataFile(File):
     values: object
 
+@dataclass
+class Data:
+    dates: [str]
+    open: [float]
+    high: [float]
+    low: [float]
+    close: [float]
+    volume: [float]
+
 class Dataset:
     def __init__(self):
         self.__config = Config()
@@ -42,21 +51,25 @@ class Dataset:
         fname = symbol + '.csv'
         file_name = os.path.join(self.__config.get_ds_path(), fname)
         data = pd.read_csv(file_name)
+        data = data.sort_values('date')
 
         fstat = self.__get_file_stats(fname)
         return DataFile(
             fstat.name,
             fstat.size,
             fstat.modified,
-            json.loads(data.to_json(orient='records'))
+            self.transform_data(data.values)
         )
 
-    def generate_dataset(self, symbol, history_points):
+
+    def generate_dataset(self, symbol):
+        history_points = self.__config.get_history_points()
         file_name = os.path.join(self.__config.get_ds_path(), f'{symbol}.csv')
 
         # load file
         data = pd.read_csv(file_name)
         data = data.sort_values('date')
+        orig = data.values
         data = data.drop('date', axis=1)
         data = data.drop(0, axis=0)
         data = data.values
@@ -72,7 +85,7 @@ class Dataset:
         # X = X.reshape(n-history_points, history_points*d)
         # y = y[:,0]
 
-        return X, y, normaliser, data
+        return X, y, normaliser, orig
 
 
     def get_all_datasets(self):
@@ -81,6 +94,17 @@ class Dataset:
             for fname in files:
                 res.append(self.__get_file_stats(fname))
         return res
+
+
+    def transform_data(self, data):
+        return Data(
+            data[:,0].tolist(),
+            data[:,1].tolist(),
+            data[:,2].tolist(),
+            data[:,3].tolist(),
+            data[:,4].tolist(),
+            data[:,5].tolist()
+        )
 
 
     def __get_file_stats(self, fname):

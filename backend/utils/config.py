@@ -16,7 +16,10 @@ class Config(metaclass=Singleton):
         # read config values
         self.__port = config.getint('default', 'port')
         self.__ds_path = config.get('default','dataset_path')
+        self.__model_path = config.get('default', 'model_path')
+        self.__prediction_path = config.get('default', 'prediction_path')
         self.__api_key = config.get('alpha_vantage', 'api_key')
+        self.__history_points = 50
 
         self.__config = config
 
@@ -28,3 +31,12 @@ class Config(metaclass=Singleton):
 
     def get_api_key(self):
         return self.__api_key
+
+    def get_model_path(self):
+        return self.__model_path
+
+    def get_prediction_path(self):
+        return self.__prediction_path
+
+    def get_history_points(self):
+        return self.__history_points
