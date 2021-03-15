@@ -9,12 +9,14 @@ import {
 
 const initialState: DatasetState = {
     files: [],
+    success: false,
     loading: false,
     error: false,
     message: '',
 };
 
 const resetState = (state: DatasetState) => {
+    state.success = false;
     state.loading = false;
     state.error = false;
     state.message = '';
@@ -42,11 +44,14 @@ export function datasetReducer(
         case GET_DATASETS:
             return {
                 ...state,
+                success: action.success,
                 files: action.files,
             };
         case SAVE_DATASET:
             return {
                 ...state,
+                success: action.success,
+                selected: action.file,
                 files: [...state.files, action.file],
             };
         default:

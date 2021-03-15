@@ -41,7 +41,7 @@ export const thunkSaveDataset = (symbol: string): AppThunk => async (
     try {
         dispatch(loadingDataset());
         const res = (
-            await axios.post('http://localhost:8888/save_dataset', { symbol })
+            await axios.post('http://localhost:8888/dataset', { symbol })
         ).data;
         if (res.success) dispatch(saveDataset(res.data));
         else dispatch(errorDataset(res.error));

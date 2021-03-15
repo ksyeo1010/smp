@@ -33,8 +33,9 @@ def main():
         return jsonify(res), 200
 
     # dataset
-    @app.route('/dataset/<string:symbol>', methods=['GET', 'POST'])
-    def dataset(symbol):
+    @app.route('/dataset/<string:symbol>', methods=['GET'])
+    @app.route('/dataset', methods=['POST'])
+    def dataset(symbol=None):
         try:
             if request.method == 'GET':
                 df = ds.load_dataset(symbol)
