@@ -187,7 +187,7 @@ const DataTable = (props: DataTableProps) => {
                                             {bytesToKB(row.size)}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Icons />
+                                            <Icons symbol={row.name} />
                                         </TableCell>
                                     </TableRow>
                                 );

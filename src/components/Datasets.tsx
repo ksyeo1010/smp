@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import { Typography, Popover } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -44,24 +45,30 @@ type PropsFromRedux = ConnectedProps<typeof connector>;
 
 type Props = PropsFromRedux;
 
+interface IconProps {
+    symbol: string;
+}
+
 const headCells: HeadCell[] = [
     { id: 'name', label: 'Name', align: 'left' },
     { id: 'modified', label: 'Last Updated', align: 'right' },
     { id: 'size', label: 'Size (KB)', align: 'right' },
 ];
 
-const Dataset = (props: Props) => {
+const Datasets = (props: Props) => {
     const classes = useStyles();
     const { dataset, getDatasets } = props;
+    const history = useHistory();
 
     useEffect(() => {
         getDatasets();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const Icons = () => {
+    const Icons = (iprops: IconProps) => {
         const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
         const [anchorLabel, setAnchorLabel] = useState('');
+        const { symbol } = iprops;
 
         const handlePopoverOpen = (
             event: React.MouseEvent<SVGSVGElement, MouseEvent>,
@@ -76,6 +83,10 @@ const Dataset = (props: Props) => {
             setAnchorLabel('');
         };
 
+        const handleViewClick = () => {
+            history.push(`/datasets/${symbol}`);
+        };
+
         return (
             <div>
                 <PageviewIcon
@@ -84,6 +95,7 @@ const Dataset = (props: Props) => {
                         handlePopoverOpen(e, 'View Model');
                     }}
                     onMouseLeave={handlePopoverClose}
+                    onClick={handleViewClick}
                 />
                 <UpdateIcon
                     className={classes.icon}
@@ -135,4 +147,4 @@ const Dataset = (props: Props) => {
     );
 };
 
-export default connector(Dataset);
+export default connector(Datasets);

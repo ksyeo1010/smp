@@ -38,7 +38,8 @@ def main():
     def dataset(symbol=None):
         try:
             if request.method == 'GET':
-                df = ds.load_dataset(symbol)
+                dateRange = request.args.get('range')
+                df = ds.load_dataset(symbol, dateRange)
                 res = ResponseType(True, df)
                 status = 200
             elif request.method == 'POST':

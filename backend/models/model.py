@@ -22,8 +22,8 @@ class PredList:
 class Prediction:
     symbol: str
     predicted_at: str
-    predictions: Data
-    forecast: Data
+    predictions: [Data]
+    forecast: [Data]
 
 # enum type
 class ModelType(Enum):
@@ -39,7 +39,7 @@ class Model:
 
     def fit_predict(self, symbol, mtype, ds):
         mid = str(uuid.uuid4())
-        X,y,normaliser,data = ds.generate_dataset(symbol)
+        X,y,normaliser,dates = ds.generate_dataset(symbol)
         model = self.get_model(mtype)
         model.fit(X,y)
         self.save_model(mid, model)
@@ -50,12 +50,11 @@ class Model:
         preds = future_pred(model, X[-1])
         preds = normaliser.inverse_transform(preds)
 
-        dates = data[self.__config.get_history_points()+1:,0].reshape(-1,1)
-        y_pred = np.concatenate((dates, y_pred), axis=1)
-        preds = np.concatenate((get_future_days(data[-1,0]), preds), axis=1)
+        y_pred = np.concatenate((dates.reshape(-1,1), y_pred), axis=1)
+        preds = np.concatenate((get_future_days(dates[-1]), preds), axis=1)
 
         curr_date = datetime.now().strftime('%Y-%m-%d')
-        self.save_prediction(mid, symbol, curr_date, ds.transform_data(y_pred), ds.transform_data(preds))
+        self.save_prediction(mid, symbol, curr_date, ds.to_data_type(y_pred), ds.to_data_type(preds))
 
         return PredList(mid, symbol, curr_date)
 

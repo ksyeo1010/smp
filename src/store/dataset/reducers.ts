@@ -1,6 +1,7 @@
 import {
     DatasetState,
     DatasetActionTypes,
+    GET_DATASET,
     GET_DATASETS,
     SAVE_DATASET,
     DATASET_LOADING,
@@ -44,8 +45,12 @@ export function datasetReducer(
         case GET_DATASETS:
             return {
                 ...state,
-                success: action.success,
                 files: action.files,
+            };
+        case GET_DATASET:
+            return {
+                ...state,
+                selected: action.file,
             };
         case SAVE_DATASET:
             return {

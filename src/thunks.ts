@@ -6,6 +6,7 @@ import { RootState } from './store';
 
 import {
     errorDataset,
+    getDataset,
     getDatasets,
     loadingDataset,
     saveDataset,
@@ -29,6 +30,24 @@ export const thunkGetDatasets = (): AppThunk => async (dispatch) => {
         dispatch(loadingDataset());
         const res = (await axios.get('http://localhost:8888/datasets')).data;
         if (res.success) dispatch(getDatasets(res.data));
+        else dispatch(errorDataset(res.error));
+    } catch (e) {
+        dispatch(errorDataset(e.message));
+    }
+};
+
+export const thunkGetDataset = (
+    symbol: string,
+    range?: number
+): AppThunk => async (dispatch) => {
+    try {
+        dispatch(loadingDataset());
+        let query = `http://localhost:8888/dataset/${symbol}`;
+        if (range !== undefined) {
+            query += `?range=${range}`;
+        }
+        const res = (await axios.get(query)).data;
+        if (res.success) dispatch(getDataset(res.data));
         else dispatch(errorDataset(res.error));
     } catch (e) {
         dispatch(errorDataset(e.message));

@@ -16,18 +16,21 @@ class File:
     size: int
     modified: str
 
-@dataclass
-class DataFile(File):
-    values: object
 
 @dataclass
 class Data:
-    dates: [str]
-    open: [float]
-    high: [float]
-    low: [float]
-    close: [float]
-    volume: [float]
+    date: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+
+
+@dataclass
+class DataFile(File):
+    values: [Data]
+
 
 class Dataset:
     def __init__(self):
@@ -47,18 +50,22 @@ class Dataset:
         return self.__get_file_stats(fname)
 
 
-    def load_dataset(self, symbol):
+    def load_dataset(self, symbol, dateRange=None):
         fname = symbol + '.csv'
         file_name = os.path.join(self.__config.get_ds_path(), fname)
         data = pd.read_csv(file_name)
         data = data.sort_values('date')
+        if dateRange is not None:
+            length, _ = data.shape
+            data = data[length-int(dateRange):]
+        data = self.transform_data(data)
 
         fstat = self.__get_file_stats(fname)
         return DataFile(
             fstat.name,
             fstat.size,
             fstat.modified,
-            self.transform_data(data.values)
+            json.loads(data.to_json(orient='records'))
         )
 
 
@@ -68,10 +75,11 @@ class Dataset:
 
         # load file
         data = pd.read_csv(file_name)
+        n,d = data.shape
+
         data = data.sort_values('date')
-        orig = data.values
+        dates = data['date'].values[history_points:]
         data = data.drop('date', axis=1)
-        data = data.drop(0, axis=0)
         data = data.values
 
         # transform dataset to use in model
@@ -85,7 +93,7 @@ class Dataset:
         # X = X.reshape(n-history_points, history_points*d)
         # y = y[:,0]
 
-        return X, y, normaliser, orig
+        return X, y, normaliser, dates
 
 
     def get_all_datasets(self):
@@ -96,15 +104,19 @@ class Dataset:
         return res
 
 
+    def to_data_type(self, data):
+        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        return json.loads(df.to_json(orient='records'))
+
+
     def transform_data(self, data):
-        return Data(
-            data[:,0].tolist(),
-            data[:,1].tolist(),
-            data[:,2].tolist(),
-            data[:,3].tolist(),
-            data[:,4].tolist(),
-            data[:,5].tolist()
-        )
+        return data.rename(columns={
+            '1. open': 'open',
+            '2. high': 'high',
+            '3. low': 'low',
+            '4. close': 'close',
+            '5. volume': 'volume'
+            })
 
 
     def __get_file_stats(self, fname):
@@ -113,8 +125,10 @@ class Dataset:
 
         mtime = datetime.fromtimestamp(fs.stat().st_mtime)
 
+        symbol, _ = os.path.splitext(fname)
+
         return File(
-            fname,
+            symbol,
             fs.stat().st_size,
             mtime.strftime('%Y-%m-%d')
         )

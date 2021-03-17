@@ -1,6 +1,7 @@
 import {
     DatasetActionTypes,
     FileType,
+    GET_DATASET,
     GET_DATASETS,
     SAVE_DATASET,
     DATASET_LOADING,
@@ -25,8 +26,14 @@ export function errorDataset(message: string): DatasetActionTypes {
 export function getDatasets(files: FileType[]): DatasetActionTypes {
     return {
         type: GET_DATASETS,
-        success: true,
         files,
+    };
+}
+
+export function getDataset(file: FileType): DatasetActionTypes {
+    return {
+        type: GET_DATASET,
+        file,
     };
 }
 

@@ -15,7 +15,8 @@ import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import './App.global.css';
 import SideBar, { RouteType, useStyles } from './components/SideBar';
 import Search from './components/Search';
-import Dataset from './components/Dataset';
+import Datasets from './components/Datasets';
+import DataPage from './components/DataPage';
 
 const mainRoutes: RouteType[] = [
     {
@@ -30,7 +31,7 @@ const mainRoutes: RouteType[] = [
         text: 'Datasets',
         exact: true,
         icon: <DescriptionIcon />,
-        component: Dataset,
+        component: Datasets,
     },
     {
         path: '/predictions',
@@ -51,6 +52,15 @@ const sideRoutes: RouteType[] = [
     },
 ];
 
+const unrenderedRoutes: RouteType[] = [
+    {
+        path: '/datasets/:symbol',
+        text: 'Symbol Viewer',
+        exact: true,
+        component: DataPage,
+    },
+];
+
 export default function App() {
     const classes = useStyles();
 
@@ -64,6 +74,16 @@ export default function App() {
                     <div className={classes.toolbar} />
                     <Switch>
                         {routes.map((route) => (
+                            <Route
+                                key={route.text}
+                                path={route.path}
+                                exact={route.exact}
+                                component={route.component}
+                            />
+                        ))}
+                    </Switch>
+                    <Switch>
+                        {unrenderedRoutes.map((route) => (
                             <Route
                                 key={route.text}
                                 path={route.path}

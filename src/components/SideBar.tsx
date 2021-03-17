@@ -18,7 +18,7 @@ export type RouteType = {
     path: string;
     text: string;
     exact: boolean;
-    icon: React.ReactElement;
+    icon?: React.ReactElement;
     component: React.ComponentType;
 };
 
