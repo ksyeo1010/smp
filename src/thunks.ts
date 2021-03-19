@@ -11,6 +11,13 @@ import {
     loadingDataset,
     saveDataset,
 } from './store/dataset/actions';
+import {
+    loadingPrediction,
+    errorPrediction,
+    getPredictions,
+    getPrediction,
+    prediction,
+} from './store/prediction/action';
 
 // default type
 export type AppThunk<ReturnType = void> = ThunkAction<
@@ -66,5 +73,44 @@ export const thunkSaveDataset = (symbol: string): AppThunk => async (
         else dispatch(errorDataset(res.error));
     } catch (e) {
         dispatch(errorDataset(e.message));
+    }
+};
+
+export const thunkPredict = (symbol: string): AppThunk => async (dispatch) => {
+    try {
+        dispatch(loadingPrediction());
+        const res = (
+            await axios.post('http://localhost:8888/prediction', { symbol })
+        ).data;
+        if (res.success) dispatch(prediction(res.data));
+        else dispatch(errorPrediction(res.error));
+    } catch (e) {
+        dispatch(errorPrediction(e.message));
+    }
+};
+
+export const thunkGetPredictions = (): AppThunk => async (dispatch) => {
+    try {
+        dispatch(loadingPrediction());
+        const res = (await axios.get('http://localhost:8888/predictions')).data;
+        if (res.success) dispatch(getPredictions(res.data));
+        else dispatch(errorPrediction(res.error));
+    } catch (e) {
+        dispatch(errorPrediction(e.message));
+    }
+};
+
+export const thunkGetPrediction = (uuid: string): AppThunk => async (
+    dispatch
+) => {
+    try {
+        dispatch(loadingPrediction());
+        const res = (
+            await axios.get(`http://localhost:8888/predictions/${uuid}`)
+        ).data;
+        if (res.success) dispatch(getPrediction(res.data));
+        else dispatch(errorPrediction(res.error));
+    } catch (e) {
+        dispatch(errorPrediction(e.message));
     }
 };

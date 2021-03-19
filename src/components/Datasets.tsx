@@ -50,7 +50,7 @@ interface IconProps {
 }
 
 const headCells: HeadCell[] = [
-    { id: 'name', label: 'Name', align: 'left' },
+    { id: 'symbol', label: 'Symbol', align: 'left' },
     { id: 'modified', label: 'Last Updated', align: 'right' },
     { id: 'size', label: 'Size (KB)', align: 'right' },
 ];

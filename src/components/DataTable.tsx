@@ -140,7 +140,7 @@ const DataTable = (props: DataTableProps) => {
     const { data, headCells, Icons } = props;
 
     const [order, setOrder] = useState<Order>('asc');
-    const [orderBy, setOrderBy] = useState<keyof FileType>('name');
+    const [orderBy, setOrderBy] = useState<keyof DataType>('symbol');
 
     const handleRequestSort = (
         _event: React.MouseEvent<unknown>,
@@ -169,7 +169,7 @@ const DataTable = (props: DataTableProps) => {
                                 getComparator(order, orderBy)
                             ).map((row, index) => {
                                 return (
-                                    <TableRow key={row.name} hover>
+                                    <TableRow key={row.symbol} hover>
                                         <TableCell align="left">
                                             {index}
                                         </TableCell>
@@ -178,7 +178,7 @@ const DataTable = (props: DataTableProps) => {
                                             scope="row"
                                             align="left"
                                         >
-                                            {row.name}
+                                            {row.symbol}
                                         </TableCell>
                                         <TableCell align="right">
                                             {row.modified}
@@ -187,7 +187,7 @@ const DataTable = (props: DataTableProps) => {
                                             {bytesToKB(row.size)}
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Icons symbol={row.name} />
+                                            <Icons symbol={row.symbol} />
                                         </TableCell>
                                     </TableRow>
                                 );

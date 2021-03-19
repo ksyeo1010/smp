@@ -12,7 +12,7 @@ from utils import Config
 
 @dataclass
 class File:
-    name: str
+    symbol: str
     size: int
     modified: str
 
@@ -62,7 +62,7 @@ class Dataset:
 
         fstat = self.__get_file_stats(fname)
         return DataFile(
-            fstat.name,
+            fstat.symbol,
             fstat.size,
             fstat.modified,
             json.loads(data.to_json(orient='records'))

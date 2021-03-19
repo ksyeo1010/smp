@@ -17,7 +17,7 @@ export interface ValuesType {
 
 // FileType holds the information of a file type
 export interface FileType {
-    name: string;
+    symbol: string;
     modified: string;
     size: number;
     values?: ValuesType[];

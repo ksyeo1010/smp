@@ -85,7 +85,7 @@ const Search = (props: Props) => {
                 {success && selected && (
                     <Alert severity="success">
                         <AlertTitle>Success</AlertTitle>
-                        Successfully downloaded {selected.name} with size{' '}
+                        Successfully downloaded {selected.symbol} with size{' '}
                         {bytesToKB(selected.size)} KB.
                     </Alert>
                 )}
