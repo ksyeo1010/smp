@@ -17,6 +17,8 @@ import SideBar, { RouteType, useStyles } from './components/SideBar';
 import Search from './components/Search';
 import Datasets from './components/Datasets';
 import DataPage from './components/DataPage';
+import Predictions from './components/Predictions';
+import PredictionPage from './components/PredictionPage';
 
 const mainRoutes: RouteType[] = [
     {
@@ -38,7 +40,7 @@ const mainRoutes: RouteType[] = [
         text: 'Predictions',
         exact: true,
         icon: <TrendingUpIcon />,
-        component: () => <div>Predictions</div>,
+        component: Predictions,
     },
 ];
 
@@ -58,6 +60,12 @@ const unrenderedRoutes: RouteType[] = [
         text: 'Symbol Viewer',
         exact: true,
         component: DataPage,
+    },
+    {
+        path: '/predictions/:uuid',
+        text: 'Prediction Viewer',
+        exact: true,
+        component: PredictionPage,
     },
 ];
 

@@ -100,14 +100,17 @@ export const thunkGetPredictions = (): AppThunk => async (dispatch) => {
     }
 };
 
-export const thunkGetPrediction = (uuid: string): AppThunk => async (
-    dispatch
-) => {
+export const thunkGetPrediction = (
+    uuid: string,
+    range?: number
+): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingPrediction());
-        const res = (
-            await axios.get(`http://localhost:8888/predictions/${uuid}`)
-        ).data;
+        let query = `http://localhost:8888/prediction/${uuid}`;
+        if (range !== undefined) {
+            query += `?range=${range}`;
+        }
+        const res = (await axios.get(query)).data;
         if (res.success) dispatch(getPrediction(res.data));
         else dispatch(errorPrediction(res.error));
     } catch (e) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
@@ -10,9 +11,6 @@ import {
     TableSortLabel,
     TableContainer,
 } from '@material-ui/core';
-
-import { FileType } from '../store/dataset/types';
-import { bytesToKB } from '../utils';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -40,7 +38,6 @@ const useStyles = makeStyles((theme: Theme) =>
     })
 );
 
-type DataType = FileType;
 type Order = 'asc' | 'desc';
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -53,10 +50,13 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     return 0;
 }
 
-function getComparator<Key extends keyof DataType>(
+function getComparator<Key extends keyof any>(
     order: Order,
     orderBy: Key
-): (a: DataType, b: DataType) => number {
+): (
+    a: { [key in Key]: number | string | unknown },
+    b: { [key in Key]: number | string | unknown }
+) => number {
     return order === 'desc'
         ? (a, b) => descendingComparator(a, b, orderBy)
         : (a, b) => -descendingComparator(a, b, orderBy);
@@ -72,26 +72,43 @@ function stableSort<T>(array: T[], comparator: (a: T, b: T) => number) {
     return stabilizedThis.map((el) => el[0]);
 }
 
-export interface HeadCell {
-    id: keyof DataType;
+export interface HeadCell<T> {
+    id: keyof T | string;
     label: string;
     align: 'left' | 'right';
+    order: boolean;
 }
 
-interface DataTableHeadProps {
+export interface RowCell<T> {
+    id: keyof T | string;
+    key: keyof T;
+    align: 'left' | 'right';
+    input?: any[];
+    apply?(input: any): any;
+}
+
+interface DataTableHeadProps<T> {
     classes: ReturnType<typeof useStyles>;
-    headCells: HeadCell[];
+    headCells: HeadCell<T>[];
     onRequestSort: (
         event: React.MouseEvent<unknown>,
-        property: keyof DataType
+        property: keyof T
     ) => void;
     order: Order;
     orderBy: string;
+    showIndex: boolean;
 }
 
-const DataTableHead = (props: DataTableHeadProps) => {
-    const { classes, headCells, onRequestSort, order, orderBy } = props;
-    const createSortHandler = (property: keyof DataType) => (
+const DataTableHead = <T extends any>(props: DataTableHeadProps<T>) => {
+    const {
+        classes,
+        headCells,
+        onRequestSort,
+        order,
+        orderBy,
+        showIndex,
+    } = props;
+    const createSortHandler = (property: keyof T) => (
         event: React.MouseEvent<unknown>
     ) => {
         onRequestSort(event, property);
@@ -100,51 +117,66 @@ const DataTableHead = (props: DataTableHeadProps) => {
     return (
         <TableHead>
             <TableRow>
-                <TableCell>#</TableCell>
-                {headCells.map((hc) => (
-                    <TableCell
-                        key={hc.id}
-                        align={hc.align}
-                        sortDirection={orderBy === hc.id ? order : false}
-                    >
-                        <TableSortLabel
-                            active={orderBy === hc.id}
-                            direction={hc.id ? order : 'asc'}
-                            onClick={createSortHandler(hc.id)}
+                {showIndex ? <TableCell>#</TableCell> : null}
+                {headCells.map((hc) =>
+                    hc.order ? (
+                        <TableCell
+                            key={hc.id as string}
+                            align={hc.align}
+                            sortDirection={orderBy === hc.id ? order : false}
                         >
+                            <TableSortLabel
+                                active={orderBy === hc.id}
+                                direction={hc.id ? order : 'asc'}
+                                onClick={createSortHandler(hc.id as keyof T)}
+                            >
+                                {hc.label}
+                                {orderBy === hc.id ? (
+                                    <span className={classes.visuallyHidden}>
+                                        {order === 'desc'
+                                            ? 'sorted descending'
+                                            : 'sorted ascending'}
+                                    </span>
+                                ) : null}
+                            </TableSortLabel>
+                        </TableCell>
+                    ) : (
+                        <TableCell key={hc.id as string} align={hc.align}>
                             {hc.label}
-                            {orderBy === hc.id ? (
-                                <span className={classes.visuallyHidden}>
-                                    {order === 'desc'
-                                        ? 'sorted descending'
-                                        : 'sorted ascending'}
-                                </span>
-                            ) : null}
-                        </TableSortLabel>
-                    </TableCell>
-                ))}
-                <TableCell align="right">Actions</TableCell>
+                        </TableCell>
+                    )
+                )}
             </TableRow>
         </TableHead>
     );
 };
 
-interface DataTableProps {
-    data: DataType[];
-    headCells: HeadCell[];
-    Icons: React.ElementType;
+interface DataTableProps<T> {
+    data: T[];
+    headCells: HeadCell<T>[];
+    rowCells: RowCell<T>[];
+    primaryKey: keyof T;
+    uniqueKey: keyof T;
+    showIndex?: boolean;
 }
 
-const DataTable = (props: DataTableProps) => {
+const DataTable = <T extends any>(props: DataTableProps<T>) => {
     const classes = useStyles();
-    const { data, headCells, Icons } = props;
+    const {
+        data,
+        headCells,
+        rowCells,
+        showIndex,
+        primaryKey,
+        uniqueKey,
+    } = props;
 
     const [order, setOrder] = useState<Order>('asc');
-    const [orderBy, setOrderBy] = useState<keyof DataType>('symbol');
+    const [orderBy, setOrderBy] = useState<keyof T>(primaryKey);
 
     const handleRequestSort = (
         _event: React.MouseEvent<unknown>,
-        property: keyof DataType
+        property: keyof T
     ) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
@@ -156,39 +188,45 @@ const DataTable = (props: DataTableProps) => {
             <Paper className={classes.paper}>
                 <TableContainer>
                     <Table className={classes.table}>
-                        <DataTableHead
+                        <DataTableHead<T>
                             classes={classes}
                             order={order}
-                            orderBy={orderBy}
+                            orderBy={orderBy as string}
                             onRequestSort={handleRequestSort}
                             headCells={headCells}
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                            showIndex={showIndex!}
                         />
                         <TableBody>
                             {stableSort(
-                                data,
+                                data as T[],
                                 getComparator(order, orderBy)
                             ).map((row, index) => {
                                 return (
-                                    <TableRow key={row.symbol} hover>
-                                        <TableCell align="left">
-                                            {index}
-                                        </TableCell>
-                                        <TableCell
-                                            component="th"
-                                            scope="row"
-                                            align="left"
-                                        >
-                                            {row.symbol}
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            {row.modified}
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            {bytesToKB(row.size)}
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <Icons symbol={row.symbol} />
-                                        </TableCell>
+                                    <TableRow
+                                        key={String(row[uniqueKey])}
+                                        hover
+                                    >
+                                        {showIndex ? (
+                                            <TableCell>{index}</TableCell>
+                                        ) : null}
+                                        {rowCells.map((rc) => (
+                                            <TableCell
+                                                align={rc.align}
+                                                key={rc.id as string}
+                                            >
+                                                {rc.apply && rc.input
+                                                    ? rc.apply(
+                                                          rc.input.map(
+                                                              (i) =>
+                                                                  row[
+                                                                      i as keyof T
+                                                                  ]
+                                                          )
+                                                      )
+                                                    : row[rc.key as keyof T]}
+                                            </TableCell>
+                                        ))}
                                     </TableRow>
                                 );
                             })}
@@ -198,6 +236,10 @@ const DataTable = (props: DataTableProps) => {
             </Paper>
         </div>
     );
+};
+
+DataTable.defaultProps = {
+    showIndex: true,
 };
 
 export default DataTable;

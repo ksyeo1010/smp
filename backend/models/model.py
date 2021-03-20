@@ -93,11 +93,14 @@ class Model:
             output.close()
 
 
-    def load_prediction(self, mid):
+    def load_prediction(self, mid, dateRange=None):
         fpath = self.__get_prediction_file_path(mid)
         with open(fpath, 'rb') as input:
             pred =  pickle.load(input)
             input.close()
+        if dateRange is not None:
+            length = len(pred.predictions)
+            pred.predictions = pred.predictions[length-int(dateRange):]
         return pred
 
 

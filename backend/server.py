@@ -64,7 +64,8 @@ def main():
     @app.route('/prediction', methods=['POST'])
     def prediction(uuid=None):
         if request.method == 'GET':
-            res = ResponseType(True, mc.load_prediction(uuid))
+            dateRange = request.args.get('range')
+            res = ResponseType(True, mc.load_prediction(uuid, dateRange))
             status = 200
         elif request.method == 'POST':
             symbol = request.json['symbol']
