@@ -20,7 +20,15 @@ import {
     getPrediction,
     prediction,
     deletePrediction,
-} from './store/prediction/action';
+} from './store/prediction/actions';
+import {
+    loadingSettings,
+    errorSettings,
+    getSettings,
+    updateSettings,
+    changeSettings,
+} from './store/settings/actions';
+import { OptionsType, SettingsType } from './store/settings/types';
 
 // default type
 export type AppThunk<ReturnType = void> = ThunkAction<
@@ -30,6 +38,7 @@ export type AppThunk<ReturnType = void> = ThunkAction<
     Action<string>
 >;
 
+const SERVER_URL = 'http://localhost:8888';
 // set axios defaults
 axios.defaults.validateStatus = () => {
     return true;
@@ -38,7 +47,7 @@ axios.defaults.validateStatus = () => {
 export const thunkGetDatasets = (): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingDataset());
-        const res = (await axios.get('http://localhost:8888/datasets')).data;
+        const res = (await axios.get(`${SERVER_URL}/datasets`)).data;
         if (res.success) dispatch(getDatasets(res.data));
         else dispatch(errorDataset(res.error));
     } catch (e) {
@@ -52,7 +61,7 @@ export const thunkGetDataset = (
 ): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingDataset());
-        let query = `http://localhost:8888/dataset/${symbol}`;
+        let query = `${SERVER_URL}/dataset/${symbol}`;
         if (range !== undefined) {
             query += `?range=${range}`;
         }
@@ -69,9 +78,8 @@ export const thunkSaveDataset = (symbol: string): AppThunk => async (
 ) => {
     try {
         dispatch(loadingDataset());
-        const res = (
-            await axios.post('http://localhost:8888/dataset', { symbol })
-        ).data;
+        const res = (await axios.post(`${SERVER_URL}/dataset`, { symbol }))
+            .data;
         if (res.success) dispatch(saveDataset(res.data));
         else dispatch(errorDataset(res.error));
     } catch (e) {
@@ -84,9 +92,7 @@ export const thunkUpdateDataset = (symbol: string): AppThunk => async (
 ) => {
     try {
         dispatch(loadingDataset());
-        const res = (
-            await axios.put('http://localhost:8888/dataset', { symbol })
-        ).data;
+        const res = (await axios.put(`${SERVER_URL}/dataset`, { symbol })).data;
         if (res.success) dispatch(updateDataset(res.data));
         else dispatch(errorDataset(res.error));
     } catch (e) {
@@ -99,9 +105,8 @@ export const thunkDeleteDataset = (symbol: string): AppThunk => async (
 ) => {
     try {
         dispatch(loadingDataset());
-        const res = (
-            await axios.delete(`http://localhost:8888/dataset/${symbol}`)
-        ).data;
+        const res = (await axios.delete(`${SERVER_URL}/dataset/${symbol}`))
+            .data;
         if (res.success) dispatch(deleteDataset(symbol));
         else dispatch(errorDataset(res.error));
     } catch (e) {
@@ -112,9 +117,8 @@ export const thunkDeleteDataset = (symbol: string): AppThunk => async (
 export const thunkPredict = (symbol: string): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingPrediction());
-        const res = (
-            await axios.post('http://localhost:8888/prediction', { symbol })
-        ).data;
+        const res = (await axios.post(`${SERVER_URL}/prediction`, { symbol }))
+            .data;
         if (res.success) dispatch(prediction(res.data));
         else dispatch(errorPrediction(res.error));
     } catch (e) {
@@ -125,7 +129,7 @@ export const thunkPredict = (symbol: string): AppThunk => async (dispatch) => {
 export const thunkGetPredictions = (): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingPrediction());
-        const res = (await axios.get('http://localhost:8888/predictions')).data;
+        const res = (await axios.get(`${SERVER_URL}/predictions`)).data;
         if (res.success) dispatch(getPredictions(res.data));
         else dispatch(errorPrediction(res.error));
     } catch (e) {
@@ -139,7 +143,7 @@ export const thunkGetPrediction = (
 ): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingPrediction());
-        let query = `http://localhost:8888/prediction/${uuid}`;
+        let query = `${SERVER_URL}/prediction/${uuid}`;
         if (range !== undefined) {
             query += `?range=${range}`;
         }
@@ -156,12 +160,44 @@ export const thunkDeletePrediction = (uuid: string): AppThunk => async (
 ) => {
     try {
         dispatch(loadingPrediction());
-        const res = (
-            await axios.delete(`http://localhost:8888/prediction/${uuid}`)
-        ).data;
+        const res = (await axios.delete(`${SERVER_URL}/prediction/${uuid}`))
+            .data;
         if (res.success) dispatch(deletePrediction(uuid));
         else dispatch(errorPrediction(res.error));
     } catch (e) {
         dispatch(errorPrediction(e));
     }
+};
+
+export const thunkGetSettings = (): AppThunk => async (dispatch) => {
+    try {
+        dispatch(loadingSettings());
+        const res = (await axios.get(`${SERVER_URL}/settings`)).data;
+        if (res.success) dispatch(getSettings(res.data));
+        else dispatch(errorSettings(res.error));
+    } catch (e) {
+        dispatch(errorSettings(e));
+    }
+};
+
+export const thunkUpdateSettings = (settings: SettingsType): AppThunk => async (
+    dispatch
+) => {
+    try {
+        dispatch(loadingSettings());
+        const res = (await axios.post(`${SERVER_URL}/settings`, { settings }))
+            .data;
+        if (res.success) dispatch(updateSettings(res.data));
+        else dispatch(errorSettings(res.error));
+    } catch (e) {
+        dispatch(errorSettings(e));
+    }
+};
+
+export const thunkChangeSettings = (
+    section: keyof SettingsType,
+    option: keyof OptionsType,
+    value: string | number
+): AppThunk => async (dispatch) => {
+    dispatch(changeSettings(section, option, value));
 };

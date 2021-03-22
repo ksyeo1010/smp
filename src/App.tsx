@@ -19,6 +19,7 @@ import Datasets from './components/Datasets';
 import DataPage from './components/DataPage';
 import Predictions from './components/Predictions';
 import PredictionPage from './components/PredictionPage';
+import Settings from './components/Settings';
 
 const mainRoutes: RouteType[] = [
     {
@@ -50,7 +51,7 @@ const sideRoutes: RouteType[] = [
         text: 'Settings',
         exact: true,
         icon: <SettingsIcon />,
-        component: () => <div>Settings</div>,
+        component: () => <Settings />,
     },
 ];
 

@@ -5,7 +5,10 @@ DS_PATH = ('default','dataset_path')
 MODEL_PATH = ('default', 'model_path')
 PREDICTION_PATH = ('default', 'prediction_path')
 API_KEY = ('alpha_vantage', 'api_key')
-HISTORY_POINTS = ('ui', 'history_points')
+HISTORY_POINTS = ('prediction', 'history_points')
+
+INT_PATHS = ('port', 'history_points')
+EXCLUDE_PATHS = ('default')
 
 
 class Singleton(type):
@@ -43,9 +46,14 @@ class Config(metaclass=Singleton):
     def get_values(self):
         res = {}
         for section in self.__config.sections():
+            if section in EXCLUDE_PATHS:
+                continue
             sec = {}
             for option in self.__config.options(section):
-                sec[option] = self.__config.get(section, option)
+                if option in INT_PATHS:
+                    sec[option] = self.__config.getint(section, option)
+                else:
+                    sec[option] = self.__config.get(section, option)
             res[section] = sec
         return res
 
@@ -55,7 +63,7 @@ class Config(metaclass=Singleton):
     def set_values(self, sections):
         for section, options in sections.items():
             for option, value in options.items():
-                self.set_value(section, option, value)
+                self.set_value(section, option, str(value))
 
     def write_values(self):
         with open('config.ini', 'w') as cf:
