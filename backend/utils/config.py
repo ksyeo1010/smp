@@ -7,6 +7,7 @@ PREDICTION_PATH = ('default', 'prediction_path')
 API_KEY = ('alpha_vantage', 'api_key')
 HISTORY_POINTS = ('ui', 'history_points')
 
+
 class Singleton(type):
     _instances = {}
     def __call__(self, *args, **kwargs):
@@ -39,9 +40,23 @@ class Config(metaclass=Singleton):
     def get_history_points(self):
         return self.__config.getint(*HISTORY_POINTS)
 
+    def get_values(self):
+        res = {}
+        for section in self.__config.sections():
+            sec = {}
+            for option in self.__config.options(section):
+                sec[option] = self.__config.get(section, option)
+            res[section] = sec
+        return res
+
     def set_value(self, section, key, value):
         self.__config.set(section, key, value)
 
-    def set_values(self, options):
-        for option in options:
-            self.__config.set(option.section, option.key, option.value)
+    def set_values(self, sections):
+        for section, options in sections.items():
+            for option, value in options.items():
+                self.set_value(section, option, value)
+
+    def write_values(self):
+        with open('config.ini', 'w') as cf:
+            self.__config.write(cf)

@@ -79,10 +79,29 @@ def main():
             elif request.method == 'DELETE':
                 mc.delete_model(uuid)
                 mc.delete_prediction(uuid)
-                res = ResponseType(True, '')
+                res = ResponseType(True, None)
                 status = 200
         except Exception as e:
-            res = ResponseType(False, '', str(e))
+            res = ResponseType(False, None, str(e))
+            status = 400
+
+        return jsonify(res), status
+
+    # settings
+    @app.route('/settings', methods=['GET', 'POST'])
+    def settings():
+        try:
+            if request.method == 'GET':
+                res = ResponseType(True, config.get_values())
+                status = 200
+            elif request.method == 'POST':
+                settings = request.json['settings']
+                config.set_values(settings)
+                config.write_values()
+                res = ResponseType(True, None)
+                status = 200
+        except Exception as e:
+            res = ResponseType(False, None, str(e))
             status = 400
 
         return jsonify(res), status
