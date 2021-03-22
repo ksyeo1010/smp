@@ -3,6 +3,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import { useParams, useLocation } from 'react-router';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import {
     Paper,
     Typography,
@@ -58,8 +59,8 @@ const PredictionPage = (props: Props) => {
     const symbol = query.get('symbol');
 
     const { dataset, prediction, getDataset, getPrediction } = props;
-    const { selected } = dataset;
-    const values = selected ? selected.values : undefined;
+    const { selected, error, message } = dataset;
+    const values = selected ? selected.values : [];
 
     const selPred = prediction.selected;
     const [predictions, forecast] = selPred
@@ -70,22 +71,25 @@ const PredictionPage = (props: Props) => {
     const [dateRange, setDateRange] = useState(100);
 
     useEffect(() => {
-        getDataset(symbol!, dateRange);
         getPrediction(uuid, dateRange);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        getDataset(symbol!, dateRange);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateRange]);
 
-    console.log(values, predictions, forecast);
-
     return (
         <div className={classes.root}>
-            {selected && values && selPred && predictions && forecast && (
+            {values && selPred && predictions && forecast && (
                 <Paper className={classes.paper}>
+                    {error && (
+                        <Alert severity="warning">
+                            <AlertTitle>Warning</AlertTitle>
+                            {message}
+                        </Alert>
+                    )}
                     <Grid container>
                         <Grid item xs={12}>
-                            <Typography variant="h5">
-                                {selected.symbol}
-                            </Typography>
+                            <Typography variant="h5">{symbol}</Typography>
                         </Grid>
                     </Grid>
                     <Viewer

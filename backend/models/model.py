@@ -4,6 +4,7 @@ import uuid
 import pathlib
 import numpy as np
 import tensorflow as tf
+import shutil
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass
@@ -75,8 +76,8 @@ class Model:
 
 
     def delete_model(self, mid):
-        file_name = os.path.join(self.__get_model_file_path(), mid)
-        os.rmdir(file_name)
+        file_name = self.__get_model_file_path(mid)
+        shutil.rmtree(file_name)
 
 
     def get_predictions(self):
@@ -110,7 +111,7 @@ class Model:
 
 
     def delete_prediction(self, mid):
-        file_name = os.path.join(self.__get_prediction_file_path(), mid)
+        file_name = self.__get_prediction_file_path(mid)
         os.remove(file_name)
 
 

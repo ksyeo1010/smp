@@ -10,6 +10,8 @@ import {
     getDatasets,
     loadingDataset,
     saveDataset,
+    deleteDataset,
+    updateDataset,
 } from './store/dataset/actions';
 import {
     loadingPrediction,
@@ -17,6 +19,7 @@ import {
     getPredictions,
     getPrediction,
     prediction,
+    deletePrediction,
 } from './store/prediction/action';
 
 // default type
@@ -76,6 +79,36 @@ export const thunkSaveDataset = (symbol: string): AppThunk => async (
     }
 };
 
+export const thunkUpdateDataset = (symbol: string): AppThunk => async (
+    dispatch
+) => {
+    try {
+        dispatch(loadingDataset());
+        const res = (
+            await axios.put('http://localhost:8888/dataset', { symbol })
+        ).data;
+        if (res.success) dispatch(updateDataset(res.data));
+        else dispatch(errorDataset(res.error));
+    } catch (e) {
+        dispatch(errorDataset(e.message));
+    }
+};
+
+export const thunkDeleteDataset = (symbol: string): AppThunk => async (
+    dispatch
+) => {
+    try {
+        dispatch(loadingDataset());
+        const res = (
+            await axios.delete(`http://localhost:8888/dataset/${symbol}`)
+        ).data;
+        if (res.success) dispatch(deleteDataset(symbol));
+        else dispatch(errorDataset(res.error));
+    } catch (e) {
+        dispatch(errorDataset(e));
+    }
+};
+
 export const thunkPredict = (symbol: string): AppThunk => async (dispatch) => {
     try {
         dispatch(loadingPrediction());
@@ -115,5 +148,20 @@ export const thunkGetPrediction = (
         else dispatch(errorPrediction(res.error));
     } catch (e) {
         dispatch(errorPrediction(e.message));
+    }
+};
+
+export const thunkDeletePrediction = (uuid: string): AppThunk => async (
+    dispatch
+) => {
+    try {
+        dispatch(loadingPrediction());
+        const res = (
+            await axios.delete(`http://localhost:8888/prediction/${uuid}`)
+        ).data;
+        if (res.success) dispatch(deletePrediction(uuid));
+        else dispatch(errorPrediction(res.error));
+    } catch (e) {
+        dispatch(errorPrediction(e));
     }
 };

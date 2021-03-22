@@ -9,7 +9,11 @@ import PageviewIcon from '@material-ui/icons/Pageview';
 import UpdateIcon from '@material-ui/icons/Update';
 
 import DataTable, { HeadCell, RowCell } from './DataTable';
-import { thunkGetDatasets } from '../thunks';
+import {
+    thunkGetDatasets,
+    thunkDeleteDataset,
+    thunkUpdateDataset,
+} from '../thunks';
 import { RootState } from '../store';
 
 import { FileType } from '../store/dataset/types';
@@ -40,6 +44,8 @@ const mapState = (state: RootState) => ({
 
 const mapDispatch = {
     getDatasets: thunkGetDatasets,
+    updateDataset: thunkUpdateDataset,
+    deleteDataset: thunkDeleteDataset,
 };
 
 const connector = connect(mapState, mapDispatch);
@@ -50,6 +56,8 @@ type Props = PropsFromRedux;
 
 interface IconProps {
     symbol: string;
+    onUpdateClick: (symbol: string) => void;
+    onDeleteClick: (symbol: string) => void;
 }
 
 const Icons = (props: IconProps) => {
@@ -57,7 +65,7 @@ const Icons = (props: IconProps) => {
     const history = useHistory();
     const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
     const [anchorLabel, setAnchorLabel] = useState('');
-    const { symbol } = props;
+    const { symbol, onUpdateClick, onDeleteClick } = props;
 
     const handlePopoverOpen = (
         event: React.MouseEvent<SVGSVGElement, MouseEvent>,
@@ -92,6 +100,7 @@ const Icons = (props: IconProps) => {
                     handlePopoverOpen(e, 'Update Model');
                 }}
                 onMouseLeave={handlePopoverClose}
+                onClick={() => onUpdateClick(symbol)}
             />
             <DeleteIcon
                 className={classes.icon}
@@ -99,6 +108,7 @@ const Icons = (props: IconProps) => {
                     handlePopoverOpen(e, 'Delete Model');
                 }}
                 onMouseLeave={handlePopoverClose}
+                onClick={() => onDeleteClick(symbol)}
             />
             <Popover
                 id="mouse-over-popover"
@@ -132,34 +142,40 @@ const headCells: HeadCell<FileType>[] = [
     { id: 'icons', label: 'Actions', align: 'right', order: false },
 ];
 
-const rowCells: RowCell<FileType>[] = [
-    { id: 'symbol', key: 'symbol', align: 'left' },
-    { id: 'modified', key: 'modified', align: 'right' },
-    {
-        id: 'size',
-        key: 'size',
-        align: 'right',
-        input: ['size'],
-        apply: ([size]) => bytesToKB(size),
-    },
-    {
-        id: 'icons',
-        key: 'symbol',
-        align: 'right',
-        input: ['symbol'],
-        apply: function renderIcons([input]) {
-            return <Icons symbol={input} />;
-        },
-    },
-];
-
 const Datasets = (props: Props) => {
-    const { dataset, getDatasets } = props;
+    const { dataset, getDatasets, updateDataset, deleteDataset } = props;
 
     useEffect(() => {
         getDatasets();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const rowCells: RowCell<FileType>[] = [
+        { id: 'symbol', key: 'symbol', align: 'left' },
+        { id: 'modified', key: 'modified', align: 'right' },
+        {
+            id: 'size',
+            key: 'size',
+            align: 'right',
+            input: ['size'],
+            apply: ([size]) => bytesToKB(size),
+        },
+        {
+            id: 'icons',
+            key: 'symbol',
+            align: 'right',
+            input: ['symbol'],
+            apply: function renderIcons([symbol]) {
+                return (
+                    <Icons
+                        symbol={symbol}
+                        onUpdateClick={updateDataset}
+                        onDeleteClick={deleteDataset}
+                    />
+                );
+            },
+        },
+    ];
 
     return (
         <div>

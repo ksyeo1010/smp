@@ -4,6 +4,8 @@ import {
     GET_DATASET,
     GET_DATASETS,
     SAVE_DATASET,
+    UPDATE_DATASET,
+    DELETE_DATASET,
     DATASET_LOADING,
     DATASET_ERROR,
 } from './types';
@@ -42,5 +44,19 @@ export function saveDataset(file: FileType): DatasetActionTypes {
         type: SAVE_DATASET,
         success: true,
         file,
+    };
+}
+
+export function updateDataset(file: FileType): DatasetActionTypes {
+    return {
+        type: UPDATE_DATASET,
+        file,
+    };
+}
+
+export function deleteDataset(symbol: string): DatasetActionTypes {
+    return {
+        type: DELETE_DATASET,
+        symbol,
     };
 }

@@ -4,6 +4,8 @@ export const DATASET_ERROR = 'DATASET_ERROR';
 export const GET_DATASETS = 'GET_DATASETS';
 export const GET_DATASET = 'GET_DATASET';
 export const SAVE_DATASET = 'SAVE_DATASET';
+export const UPDATE_DATASET = 'UPDATE_DATASET';
+export const DELETE_DATASET = 'DELETE_DATASET';
 
 // Values Type are the values of a file type
 export interface ValuesType {
@@ -65,9 +67,23 @@ export interface SaveDatasetAction {
     file: FileType;
 }
 
+// Update Dataset Action
+export interface UpdateDatasetAction {
+    type: typeof UPDATE_DATASET;
+    file: FileType;
+}
+
+// Delete Dataset Action
+export interface DeleteDatasetAction {
+    type: typeof DELETE_DATASET;
+    symbol: string;
+}
+
 export type DatasetActionTypes =
     | LoadingDatasetAction
     | ErrorDatasetAction
     | GetDatasetsAction
     | SaveDatasetAction
-    | GetDatasetAction;
+    | GetDatasetAction
+    | UpdateDatasetAction
+    | DeleteDatasetAction;

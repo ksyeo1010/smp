@@ -2,6 +2,7 @@ import {
     PredictionActionTypes,
     PredictionType,
     GET_PREDICTION,
+    DELETE_PREDICTION,
     GET_PREDICTIONS,
     PREDICTION,
     PREDICTION_LOADING,
@@ -34,6 +35,13 @@ export function getPrediction(pred: PredictionType): PredictionActionTypes {
     return {
         type: GET_PREDICTION,
         pred,
+    };
+}
+
+export function deletePrediction(uuid: string): PredictionActionTypes {
+    return {
+        type: DELETE_PREDICTION,
+        uuid,
     };
 }
 

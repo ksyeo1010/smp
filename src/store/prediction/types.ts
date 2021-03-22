@@ -3,6 +3,7 @@ export const PREDICTION_LOADING = 'PREDICTION_LOADING';
 export const PREDICTION_ERROR = 'PREDICTION_ERROR';
 export const GET_PREDICTIONS = 'GET_PREDICTIONS';
 export const GET_PREDICTION = 'GET_PREDICTION';
+export const DELETE_PREDICTION = 'DELETE_PREDICTION';
 export const PREDICTION = 'Prediction';
 
 // Values Type are the values of a file type
@@ -59,6 +60,12 @@ export interface GetPredictionAction {
     pred: PredictionType;
 }
 
+// Delete Prediction Action
+export interface DeletePredictionAction {
+    type: typeof DELETE_PREDICTION;
+    uuid: string;
+}
+
 // Prediction Action
 export interface PredictionAction {
     type: typeof PREDICTION;
@@ -71,4 +78,5 @@ export type PredictionActionTypes =
     | ErrorPredictionAction
     | GetPredictionsAction
     | PredictionAction
-    | GetPredictionAction;
+    | GetPredictionAction
+    | DeletePredictionAction;

@@ -8,7 +8,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import PageviewIcon from '@material-ui/icons/Pageview';
 
 import DataTable, { HeadCell, RowCell } from './DataTable';
-import { thunkGetPredictions } from '../thunks';
+import { thunkGetPredictions, thunkDeletePrediction } from '../thunks';
 import { RootState } from '../store';
 
 import { PredictionType } from '../store/prediction/types';
@@ -38,6 +38,7 @@ const mapState = (state: RootState) => ({
 
 const mapDispatch = {
     getPredictions: thunkGetPredictions,
+    deletePrediction: thunkDeletePrediction,
 };
 
 const connector = connect(mapState, mapDispatch);
@@ -49,6 +50,7 @@ type Props = PropsFromRedux;
 interface IconProps {
     uuid: string;
     symbol: string;
+    onDeleteClick: (uuid: string) => void;
 }
 
 const Icons = (props: IconProps) => {
@@ -56,7 +58,7 @@ const Icons = (props: IconProps) => {
     const history = useHistory();
     const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
     const [anchorLabel, setAnchorLabel] = useState('');
-    const { uuid, symbol } = props;
+    const { uuid, symbol, onDeleteClick } = props;
 
     const handlePopoverOpen = (
         event: React.MouseEvent<SVGSVGElement, MouseEvent>,
@@ -91,6 +93,7 @@ const Icons = (props: IconProps) => {
                     handlePopoverOpen(e, 'Delete Model');
                 }}
                 onMouseLeave={handlePopoverClose}
+                onClick={() => onDeleteClick(uuid)}
             />
             <Popover
                 id="mouse-over-popover"
@@ -123,27 +126,33 @@ const headCells: HeadCell<PredictionType>[] = [
     { id: 'icons', label: 'Actions', align: 'right', order: false },
 ];
 
-const rowCells: RowCell<PredictionType>[] = [
-    { id: 'symbol', key: 'symbol', align: 'left' },
-    { id: 'predicted_at', key: 'predicted_at', align: 'right' },
-    {
-        id: 'icons',
-        key: 'uuid',
-        align: 'right',
-        input: ['uuid', 'symbol'],
-        apply: function renderIcons([uuid, symbol]) {
-            return <Icons uuid={uuid} symbol={symbol} />;
-        },
-    },
-];
-
 const Predictions = (props: Props) => {
-    const { prediction, getPredictions } = props;
+    const { prediction, getPredictions, deletePrediction } = props;
 
     useEffect(() => {
         getPredictions();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const rowCells: RowCell<PredictionType>[] = [
+        { id: 'symbol', key: 'symbol', align: 'left' },
+        { id: 'predicted_at', key: 'predicted_at', align: 'right' },
+        {
+            id: 'icons',
+            key: 'uuid',
+            align: 'right',
+            input: ['uuid', 'symbol'],
+            apply: function renderIcons([uuid, symbol]) {
+                return (
+                    <Icons
+                        uuid={uuid}
+                        symbol={symbol}
+                        onDeleteClick={deletePrediction}
+                    />
+                );
+            },
+        },
+    ];
 
     return (
         <div>

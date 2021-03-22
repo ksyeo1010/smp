@@ -33,8 +33,8 @@ def main():
         return jsonify(res), 200
 
     # dataset
-    @app.route('/dataset/<string:symbol>', methods=['GET', 'PUT', 'DELETE'])
-    @app.route('/dataset', methods=['POST'])
+    @app.route('/dataset/<string:symbol>', methods=['GET', 'DELETE'])
+    @app.route('/dataset', methods=['POST', 'PUT'])
     def dataset(symbol=None):
         try:
             if request.method == 'GET':
@@ -48,7 +48,7 @@ def main():
                 res = ResponseType(True, fstat)
                 status = 201
             elif request.method == 'DELETE':
-                df.delete_dataset(symbol)
+                ds.delete_dataset(symbol)
                 res = ResponseType(True, '')
                 status = 200
         except Exception as e:
@@ -67,19 +67,23 @@ def main():
     @app.route('/prediction/<string:uuid>', methods=['GET', 'DELETE'])
     @app.route('/prediction', methods=['POST'])
     def prediction(uuid=None):
-        if request.method == 'GET':
-            dateRange = request.args.get('range')
-            res = ResponseType(True, mc.load_prediction(uuid, dateRange))
-            status = 200
-        elif request.method == 'POST':
-            symbol = request.json['symbol']
-            res = ResponseType(True, mc.fit_predict(symbol, ModelType.BASIC, ds))
-            status = 200
-        elif request.method == 'DELETE':
-            mc.delete_model(uuid)
-            mc.delete_prediction(uuid)
-            res = ResponseType(True, '')
-            status = 200
+        try:
+            if request.method == 'GET':
+                dateRange = request.args.get('range')
+                res = ResponseType(True, mc.load_prediction(uuid, dateRange))
+                status = 200
+            elif request.method == 'POST':
+                symbol = request.json['symbol']
+                res = ResponseType(True, mc.fit_predict(symbol, ModelType.BASIC, ds))
+                status = 200
+            elif request.method == 'DELETE':
+                mc.delete_model(uuid)
+                mc.delete_prediction(uuid)
+                res = ResponseType(True, '')
+                status = 200
+        except Exception as e:
+            res = ResponseType(False, '', str(e))
+            status = 400
 
         return jsonify(res), status
 
