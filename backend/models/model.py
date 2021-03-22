@@ -74,6 +74,11 @@ class Model:
         return tf.keras.models.load_model(fpath)
 
 
+    def delete_model(self, mid):
+        file_name = os.path.join(self.__get_model_file_path(), mid)
+        os.rmdir(file_name)
+
+
     def get_predictions(self):
         res = []
         for root, dirs, files in os.walk(self.__config.get_prediction_path()):
@@ -102,6 +107,11 @@ class Model:
             length = len(pred.predictions)
             pred.predictions = pred.predictions[length-int(dateRange):]
         return pred
+
+
+    def delete_prediction(self, mid):
+        file_name = os.path.join(self.__get_prediction_file_path(), mid)
+        os.remove(file_name)
 
 
     def __get_model_file_path(self, mid):

@@ -1,5 +1,12 @@
 from configparser import ConfigParser
 
+PORT = ('default', 'port')
+DS_PATH = ('default','dataset_path')
+MODEL_PATH = ('default', 'model_path')
+PREDICTION_PATH = ('default', 'prediction_path')
+API_KEY = ('alpha_vantage', 'api_key')
+HISTORY_POINTS = ('ui', 'history_points')
+
 class Singleton(type):
     _instances = {}
     def __call__(self, *args, **kwargs):
@@ -12,31 +19,29 @@ class Config(metaclass=Singleton):
     def __init__(self):
         config = ConfigParser()
         config.read('config.ini')
-
-        # read config values
-        self.__port = config.getint('default', 'port')
-        self.__ds_path = config.get('default','dataset_path')
-        self.__model_path = config.get('default', 'model_path')
-        self.__prediction_path = config.get('default', 'prediction_path')
-        self.__api_key = config.get('alpha_vantage', 'api_key')
-        self.__history_points = 50
-
         self.__config = config
 
     def get_port(self):
-        return self.__port
+        return self.__config.getint(*PORT)
 
     def get_ds_path(self):
-        return self.__ds_path
+        return self.__config.get(*DS_PATH)
 
     def get_api_key(self):
-        return self.__api_key
+        return self.__config.get(*API_KEY)
 
     def get_model_path(self):
-        return self.__model_path
+        return self.__config.get(*MODEL_PATH)
 
     def get_prediction_path(self):
-        return self.__prediction_path
+        return self.__config.get(*PREDICTION_PATH)
 
     def get_history_points(self):
-        return self.__history_points
+        return self.__config.getint(*HISTORY_POINTS)
+
+    def set_value(self, section, key, value):
+        self.__config.set(section, key, value)
+
+    def set_values(self, options):
+        for option in options:
+            self.__config.set(option.section, option.key, option.value)

@@ -33,7 +33,7 @@ def main():
         return jsonify(res), 200
 
     # dataset
-    @app.route('/dataset/<string:symbol>', methods=['GET'])
+    @app.route('/dataset/<string:symbol>', methods=['GET', 'PUT', 'DELETE'])
     @app.route('/dataset', methods=['POST'])
     def dataset(symbol=None):
         try:
@@ -42,11 +42,15 @@ def main():
                 df = ds.load_dataset(symbol, dateRange)
                 res = ResponseType(True, df)
                 status = 200
-            elif request.method == 'POST':
+            elif request.method == 'POST' or request.method == 'PUT':
                 symbol = request.json['symbol']
                 fstat = ds.save_dataset(symbol)
                 res = ResponseType(True, fstat)
                 status = 201
+            elif request.method == 'DELETE':
+                df.delete_dataset(symbol)
+                res = ResponseType(True, '')
+                status = 200
         except Exception as e:
             res = ResponseType(False, '', str(e))
             status = 400
@@ -60,7 +64,7 @@ def main():
         return jsonify(res), 200
 
     # prediction
-    @app.route('/prediction/<string:uuid>', methods=['GET'])
+    @app.route('/prediction/<string:uuid>', methods=['GET', 'DELETE'])
     @app.route('/prediction', methods=['POST'])
     def prediction(uuid=None):
         if request.method == 'GET':
@@ -70,6 +74,11 @@ def main():
         elif request.method == 'POST':
             symbol = request.json['symbol']
             res = ResponseType(True, mc.fit_predict(symbol, ModelType.BASIC, ds))
+            status = 200
+        elif request.method == 'DELETE':
+            mc.delete_model(uuid)
+            mc.delete_prediction(uuid)
+            res = ResponseType(True, '')
             status = 200
 
         return jsonify(res), status

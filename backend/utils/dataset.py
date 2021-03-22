@@ -68,6 +68,11 @@ class Dataset:
             json.loads(data.to_json(orient='records'))
         )
 
+    def delete_dataset(self, symbol):
+        fname = symbol + '.csv'
+        file_name = os.path.join(self.__config.get_ds_path(), fname)
+        os.remove(file_name)
+
 
     def generate_dataset(self, symbol):
         history_points = self.__config.get_history_points()
