@@ -4,8 +4,10 @@ PORT = ('default', 'port')
 DS_PATH = ('default','dataset_path')
 MODEL_PATH = ('default', 'model_path')
 PREDICTION_PATH = ('default', 'prediction_path')
+TREND_PATH = ('default', 'trend_path')
 API_KEY = ('alpha_vantage', 'api_key')
 HISTORY_POINTS = ('prediction', 'history_points')
+MIN_DATE = ('prediction', 'min_date')
 
 INT_PATHS = ('port', 'history_points')
 EXCLUDE_PATHS = ('default')
@@ -40,8 +42,14 @@ class Config(metaclass=Singleton):
     def get_prediction_path(self):
         return self.__config.get(*PREDICTION_PATH)
 
+    def get_trend_path(self):
+        return self.__config.get(*TREND_PATH)
+
     def get_history_points(self):
         return self.__config.getint(*HISTORY_POINTS)
+
+    def get_min_date(self):
+        return self.__config.get(*MIN_DATE)
 
     def get_values(self):
         res = {}

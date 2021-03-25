@@ -3,8 +3,8 @@ import os
 from flask import request, jsonify
 from dataclasses import dataclass
 
-from utils import Config, Dataset
-from models import Model, ModelType
+from utils import Config, Dataset, Trends, compare_and_merge
+from models import Model
 
 # set os environ
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -22,6 +22,7 @@ def main():
     config = Config()
     ds = Dataset()
     mc = Model()
+    tr = Trends()
 
     # start server
     app = flask.Flask(__name__)
@@ -45,6 +46,11 @@ def main():
             elif request.method == 'POST' or request.method == 'PUT':
                 symbol = request.json['symbol']
                 fstat = ds.save_dataset(symbol)
+                tr.save_trends(symbol)
+                compare_and_merge(
+                    os.path.join(config.get_ds_path(), f'{symbol}.csv'),
+                    os.path.join(config.get_trend_path(), f'{symbol}.csv')
+                )
                 res = ResponseType(True, fstat)
                 status = 201
             elif request.method == 'DELETE':
@@ -74,7 +80,7 @@ def main():
                 status = 200
             elif request.method == 'POST':
                 symbol = request.json['symbol']
-                res = ResponseType(True, mc.fit_predict(symbol, ModelType.BASIC, ds))
+                res = ResponseType(True, mc.fit_predict(symbol))
                 status = 200
             elif request.method == 'DELETE':
                 mc.delete_model(uuid)

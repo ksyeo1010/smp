@@ -5,13 +5,15 @@ import pathlib
 import numpy as np
 import tensorflow as tf
 import shutil
+import pandas as pd
+import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass
 from utils import Config, Data
 
 # list models
-from models import basic_model, future_pred, get_future_days
+from models import stock_model, generate_dataset, generalize_input, forecast
 
 @dataclass
 class PredList:
@@ -26,10 +28,6 @@ class Prediction:
     predictions: [Data]
     forecast: [Data]
 
-# enum type
-class ModelType(Enum):
-    BASIC = 1
-
 
 class Model:
     def __init__(self):
@@ -38,31 +36,46 @@ class Model:
         pathlib.Path(self.__config.get_prediction_path()).mkdir(parents=True, exist_ok=True)
 
 
-    def fit_predict(self, symbol, mtype, ds):
+    def fit_predict(self, symbol):
         mid = str(uuid.uuid4())
-        X,y,normaliser,dates = ds.generate_dataset(symbol)
-        model = self.get_model(mtype)
-        model.fit(X,y)
-        self.save_model(mid, model)
 
-        y_pred = model.predict(X)
-        y_pred = normaliser.inverse_transform(y_pred)
+        tpath = os.path.join(self.__config.get_trend_path(), f'{symbol}.csv')
+        spath = os.path.join(self.__config.get_ds_path(), f'{symbol}.csv')
 
-        preds = future_pred(model, X[-1])
-        preds = normaliser.inverse_transform(preds)
+        history_points = 50
+        trend = generate_dataset(tpath, history_points)
+        stock = generate_dataset(spath, history_points)
 
-        y_pred = np.concatenate((dates.reshape(-1,1), y_pred), axis=1)
-        preds = np.concatenate((get_future_days(dates[-1]), preds), axis=1)
+        model = stock_model(history_points)
+        model.fit(
+            {"trend": trend.X, "stock": stock.X},
+            {"trend_pred": trend.y, "stock_pred": stock.y},
+            epochs=5,
+            batch_size=32,
+        )
+
+        y_t, y_s = model.predict(
+            {"trend": trend.X, "stock": stock.X}
+        )
+        y_s = stock.normaliser.inverse_transform(y_s)
+
+        pred_dates, preds = forecast(model, trend, stock, stock.dates[-1])
+        preds = stock.normaliser.inverse_transform(preds)
+
+        y_s = np.concatenate((stock.dates.reshape(-1,1), y_s), axis=1)
+        preds = np.concatenate((pred_dates, preds), axis=1)
 
         curr_date = datetime.now().strftime('%Y-%m-%d')
-        self.save_prediction(mid, symbol, curr_date, ds.to_data_type(y_pred), ds.to_data_type(preds))
+
+        self.save_model(mid, model)
+        self.save_prediction(mid, symbol, curr_date, self.to_data_type(y_s), self.to_data_type(preds))
 
         return PredList(mid, symbol, curr_date)
 
 
-    def get_model(self, mtype):
-        if mtype == ModelType.BASIC:
-            return basic_model(self.__config.get_history_points())
+    def to_data_type(self, data):
+        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        return json.loads(df.to_json(orient='records'))
 
 
     def save_model(self, mid, model):

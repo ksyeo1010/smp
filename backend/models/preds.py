@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+from utils import get_date
+
 def get_next_pred(model, x):
     return model.predict(x)
 
@@ -29,4 +31,34 @@ def future_pred(model, start, num_days=30):
 def get_future_days(start_date, num_days=30):
     data_range = pd.date_range(start=start_date, periods=num_days, freq=pd.offsets.BDay()).strftime('%Y-%m-%d').to_numpy()
     return data_range.reshape(-1,1)
+
+
+def forecast(model, trend, stock, start_date, num_days=30):
+    _,d = stock.y.shape
+    preds = np.zeros(shape=(num_days, d))
+
+    dates = get_future_days(start_date)
+
+    x_t = np.expand_dims(trend.X[-1], axis=0)
+    x_s = np.expand_dims(stock.X[-1], axis=0)
+
+    for i in range(num_days):
+        if datetime.strptime(dates[i, 0], "%Y-%m-%d").isoweekday() == 1:
+            # should update wt and ws
+            pass
+
+        y_t, y_s = model.predict({"trend": x_t, "stock": x_s})
+        preds[i] = y_s
+
+        x_t = remove_and_append(x_t, y_t)
+        x_s = remove_and_append(x_s, y_s)
+
+    return dates, preds
+
+
+def remove_and_append(x, y):
+    # remove first, append pred
+    x = np.delete(x, 1, axis=1)
+    x = np.append(x, np.expand_dims(y, axis=0), axis=1)
+    return x
 
