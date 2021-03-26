@@ -10,10 +10,12 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass
-from utils import Config, Data
 
-# list models
-from models import stock_model, generate_dataset, generalize_input, forecast
+from utils import Config, Data
+from .stock_model import stock_model, generate_dataset, generate_lstm_dataset
+from .preds import forecast
+from .indicators import *
+
 
 @dataclass
 class PredList:
@@ -44,22 +46,32 @@ class Model:
 
         history_points = 50
         trend = generate_dataset(tpath, history_points)
-        stock = generate_dataset(spath, history_points)
+        stock = generate_lstm_dataset(spath, history_points)
 
-        model = stock_model(history_points)
+        indicators = [sma]
+        stock.indicators = apply_indicators(stock.X, 1, indicators)
+
+        model = stock_model(indicators, [0.2, 0.2], history_points)
         model.fit(
-            {"trend": trend.X, "stock": stock.X},
+            {
+                "trend": trend.X,
+                "stock": stock.X,
+                **deserialize_indicators("stock", stock.indicators)
+            },
             {"trend_pred": trend.y, "stock_pred": stock.y},
             epochs=5,
             batch_size=32,
+            shuffle=True
         )
 
-        y_t, y_s = model.predict(
-            {"trend": trend.X, "stock": stock.X}
-        )
+        y_t, y_s = model.predict({
+                "trend": trend.X,
+                "stock": stock.X,
+                **deserialize_indicators("stock", stock.indicators)
+            })
         y_s = stock.normaliser.inverse_transform(y_s)
 
-        pred_dates, preds = forecast(model, trend, stock, stock.dates[-1])
+        pred_dates, preds = forecast(model, indicators, trend, stock, stock.dates[-1])
         preds = stock.normaliser.inverse_transform(preds)
 
         y_s = np.concatenate((stock.dates.reshape(-1,1), y_s), axis=1)

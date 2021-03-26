@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import pathlib
+from datetime import timedelta
 from pytrends.request import TrendReq
 from pandas.tseries.offsets import BDay
 
@@ -53,7 +54,20 @@ class Trends:
         trends = pd.concat([trends, daily])
         trends = trends[~trends.index.duplicated(keep='first')]
         trends = trends.drop(columns=['isPartial'])
+        trends = trends.replace(0, 1)
         trends.columns = kw_actual
+
+        pytrend.build_payload(kw_list, cat=0, timeframe='all')
+        monthly = pytrend.interest_over_time()
+        monthly = monthly.drop(columns=['isPartial'])
+        monthly.columns = kw_actual
+
+        for i in range(len(monthly.index)-1):
+            start, end = monthly.index[i], monthly.index[i+1]
+            end = end - timedelta(seconds=1)
+            trends[start:end] = trends[start:end].mul(monthly[start:end].values[0])
+
+        trends = trends.dropna()
 
         fpath = os.path.join(self.__config.get_trend_path(), f'{symbol}.csv')
         trends.to_csv(fpath)

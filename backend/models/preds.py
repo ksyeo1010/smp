@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 from utils import get_date
+from models.indicators import apply_indicators, deserialize_indicators
 
 def get_next_pred(model, x):
     return model.predict(x)
@@ -33,7 +34,7 @@ def get_future_days(start_date, num_days=30):
     return data_range.reshape(-1,1)
 
 
-def forecast(model, trend, stock, start_date, num_days=30):
+def forecast(model, indicators, trend, stock, start_date, num_days=30):
     _,d = stock.y.shape
     preds = np.zeros(shape=(num_days, d))
 
@@ -42,16 +43,20 @@ def forecast(model, trend, stock, start_date, num_days=30):
     x_t = np.expand_dims(trend.X[-1], axis=0)
     x_s = np.expand_dims(stock.X[-1], axis=0)
 
-    for i in range(num_days):
-        if datetime.strptime(dates[i, 0], "%Y-%m-%d").isoweekday() == 1:
-            # should update wt and ws
-            pass
+    s_ind = apply_indicators(x_s, 1, indicators)
 
-        y_t, y_s = model.predict({"trend": x_t, "stock": x_s})
+    for i in range(num_days):
+        y_t, y_s = model.predict({
+            "trend": x_t,
+            "stock": x_s,
+            **deserialize_indicators("stock", s_ind)
+        })
         preds[i] = y_s
 
-        x_t = remove_and_append(x_t, y_t)
+        x_t = y_t
         x_s = remove_and_append(x_s, y_s)
+
+        s_ind = apply_indicators(x_s, 1, indicators)
 
     return dates, preds
 
