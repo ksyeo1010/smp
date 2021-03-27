@@ -5,15 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "RMS",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/backend/main.py",
-            "console": "integratedTerminal",
-            "args": []
-        },
-        {
             "name": "server",
             "type": "python",
             "request": "launch",

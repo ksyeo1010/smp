@@ -97,5 +97,6 @@ def stock_model(indicators, weights, history_points=HISTORY_POINTS):
     )
 
     model.summary()
+    # keras.utils.plot_model(model, to_file='images/model.png')
 
     return model

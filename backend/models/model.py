@@ -48,7 +48,7 @@ class Model:
         trend = generate_dataset(tpath, history_points)
         stock = generate_lstm_dataset(spath, history_points)
 
-        indicators = [sma]
+        indicators = [sma, macd]
         stock.indicators = apply_indicators(stock.X, 1, indicators)
 
         model = stock_model(indicators, [0.2, 0.2], history_points)
